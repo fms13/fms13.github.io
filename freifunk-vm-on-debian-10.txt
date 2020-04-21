@@ -1,8 +1,11 @@
-= Freifunk as KVM Guest on a Debian 10 Host =
+= Einrichtung eines Freifunk-Images als KVM Gast auf einem Debian 10 als Host =
 
 Dieses Tutorial beschreibt, wie man ein Freifunk-Image in einer virtuellen Maschine auf Debian 10 als Hostsystem installiert.
 
-Dabei kann der interne WLAN-Adapter als Access Point eingesetzt werden, wenn das Hostsystem über eine weitere Netzwerkschnittstelle an das Internet angebunden ist.
+Für den Netzwerkzugang von gluon wird keine Bridge verwendet sondern das default-Netzwerk von libvirt. Dadurch
+hat die gluon VM per NAT-Zugang zum Internet, sie kann aber keine Hosts des LANs erreichen.
+
+Der interne WLAN-Adapter des Hostsystems kann als Access Point für das Client-Netzwerk eingesetzt werden.
 
 Als Virtualisierungs-Lösung wird der Einsatz von KVM beschrieben und die Einrichtung via libvirt.
 
@@ -17,7 +20,8 @@ Die folgenden Schritte werden beschrieben:
 
 == Installation der benötigten Pakete ==
 
-Um KVM, libvirt und die Tools zum Verwalten von Netzwerkbrücken zu installieren, sind folgende Befehle auszuführen:
+Um KVM, libvirt und die Tools zum Verwalten von Netzwerkbrücken zu installieren, sind folgende Befehle
+auszuführen:
 
   apt-get install qemu-kvm libvirt-clients libvirt-daemon-system
   apt-get install virtinst virt-top
@@ -70,7 +74,7 @@ sein, dass kein anderes Interface auf dem System diese IP-Adresse bereits nutzt,
 
   ip addr
 
-Die Netzwerkkonfiguration muss per
+Die Netzwerkkonfiguration muss als root per
 
   systemctl restart networking.service
 
@@ -80,7 +84,7 @@ Die eingerichteten Bridges können angezeigt werden mit
 
   brctl show
 
-was ergibt:
+was folgende Ausgabe ergibt:
 
   bridge name     bridge id               STP enabled     interfaces
   ffmuc-clients           8000.3cf8627f3488       no              vnet0
@@ -98,7 +102,7 @@ Als nächstes kann das gluon-Image von https://firmware.ffmuc.net/ heruntergelad
     - "Erstinstallation" auswählen.
     - "stable" auswählen
 
-Die heruntergeladene Datei in y.B. ~/Downloads/ entpacken und in /home/vm-images/ ablegen.
+Die heruntergeladene Datei in z.B. ~/Downloads/ entpacken und in /home/vm-images/ ablegen.
 
 Dazu als Benutzer ausführen:
 
@@ -108,7 +112,7 @@ Dazu als Benutzer ausführen:
   chgrp -R libvirt /home/vm-images
   chmod -R g+w /home/vm-images
 
-Jetzt installieren wir das Image um es mit Qemu zu starten, dazu als Benutzer aufrufen:
+Jetzt installieren wir das Image, um es mit Qemu zu starten. Dazu als Benutzer aufrufen:
 
   virt-install --connect qemu:///system --name ffmuc-offloader --memory 64 --vcpus=1 \
       --virt-type kvm --os-type linux --os-variant generic \
@@ -120,9 +124,9 @@ Jetzt installieren wir das Image um es mit Qemu zu starten, dazu als Benutzer au
 
 Damit die VM beim Systemstart gestartet wird, muss dieses Kommando aufgerufen werden:
 
-  virsh autostart <name>
+  virsh autostart ffmuc-offloader
 
-Die Liste der verfügbaren VMs kann man sich anzeigen lassen mit
+Die Liste der verfügbaren VMs kann man sich als Benutzer anzeigen lassen mit
 
   virsh -c qemu:///system list
 
@@ -262,7 +266,8 @@ Um den hostapd-Daemon im System zu aktivieren, muss
   systemctl unmask hostapd
   systemctl start hostapd.service
 
-aufgerufen werden. Die Einrichtung von hostapd via /etc/default/hostap ist veraltet und wird in einer künftigen Debian-Version entfernt.
+aufgerufen werden. Die Einrichtung von hostapd via /etc/default/hostap ist veraltet und wird in einer
+künftigen Debian-Version entfernt.
 
 Das WLAN-Interface sollte jetzt an ffmuc-client angekoppelt sein, was man mit
 
