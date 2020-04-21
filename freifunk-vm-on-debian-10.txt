@@ -272,7 +272,7 @@ Um den hostapd-Daemon im System zu aktivieren, muss
 aufgerufen werden. Die Einrichtung von hostapd via /etc/default/hostap ist veraltet und wird in einer
 künftigen Debian-Version entfernt.
 
-Das WLAN-Interface sollte jetzt an ffmuc-client angekoppelt sein, was man mit
+Das WLAN-Interface wlp1s0 sollte jetzt an ffmuc-client angekoppelt sein, was man mit
 
   brctl show
 
