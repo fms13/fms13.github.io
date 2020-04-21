@@ -124,7 +124,7 @@ Jetzt installieren wir das Image, um es mit Qemu zu starten. Dazu als Benutzer a
 
 Damit die VM beim Systemstart gestartet wird, muss dieses Kommando aufgerufen werden:
 
-  virsh autostart ffmuc-offloader
+  virsh -c qemu:///system autostart ffmuc-offloader
 
 Die Liste der verfügbaren VMs kann man sich als Benutzer anzeigen lassen mit
 
@@ -224,8 +224,11 @@ Nach dem Speichern muss die Konfiguration neu eingelesen werden mit
 
   systemctl reload libvirtd.service
 
-Nach dem Starten der gluon-VM testen wir die Internetverbindung der Instanz. Dazu aktivieren wir eine Konsole
-mit
+Nach dem Starten der gluon-VM mit
+
+    virsh -c qemu:///system start ffmuc-offloader
+
+ testen wir die Internetverbindung der Instanz. Dazu aktivieren wir eine Konsole mit
 
   virsh -c qemu:///system console ffmuc-offloader
 
