@@ -299,6 +299,37 @@ prüfen kann. Die Ausgabe ist z.B.
     virbr0          8000.525400a88af3       yes             virbr0-nic
                                                             vnet1
 
+= Zugang per SSH zum Router =
+
+Falls bei der Konfiguration per Web-Interface ein öffentlicher Schlüssel hinterlegt wurde, kann man sich
+auf dem Router einloggen. Dazu muss man die IP-Adresse des Interfaces br-client auf dem Router herausfinden.
+Dazu vom Debian-Host per
+
+  virsh -c qemu:///system console ffmuc-offloader
+
+einloggen, und das Kommando
+
+  ip addr show br-client
+
+starten. Eine Beispielausgabe ist
+
+  7: br-client: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP qlen 1000
+      link/ether 52:54:00:8b:1e:37 brd ff:ff:ff:ff:ff:ff
+      inet6 2001:609:a21:1a9:6054:ff:fe8b:2e37/64 scope global dynamic
+         valid_lft 7163sec preferred_lft 863sec
+      inet6 fe80::5055:ff:fe8c:2e37/64 scope link
+         valid_lft forever preferred_lft forever
+
+Die IP-Adresse steht hinter dem ersten inet6 und lautet in diesem Fall
+
+    2001:609:a21:1a9:6054:ff:fe8b:2e37
+
+Wenn man sich mit einem Computer auf das neu erstellte WLAN verbindet, kann man sich mit dieser IP-Adresse
+als root mit dem Kommando
+
+    ssh root@2001:609:a21:1a9:6054:ff:fe8b:2e37
+
+auf dem Router einloggen.
 
 Als Ausgangspunkt wurden folgende Beschreibungen genutzt:
 
