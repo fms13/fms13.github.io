@@ -87,8 +87,8 @@ Die eingerichteten Bridges können angezeigt werden mit
 was folgende Ausgabe ergibt:
 
   bridge name     bridge id               STP enabled     interfaces
-  ffmuc-clients           8000.3cf8627f3488       no              vnet0
-  ffmuc-mesh              8000.fe5400b00e26       no              vnet2
+  ffmuc-clients           8000.3cf8627f3488       no
+  ffmuc-mesh              8000.fe5400b00e26       no
   ffmuc-setup             8000.000000000000       no
 
 == Installation und Konfiguration von gluon ==
@@ -264,13 +264,20 @@ Dann wird /etc/hostapd/hostapd.conf editiert und sollte diesen Inhalt bekommen:
 
 Die SSID für den aktuellen Standort kann der Liste auf https://ffmuc.net/wiki/doku.php?id=knb:gui entnommen werden.
 
+Die Einrichtung von hostapd via /etc/default/hostap ist veraltet und wird in einer
+künftigen Debian-Version entfernt. Wir konfigurieren das WLAN-Interface wlp1s0 als root
+in /etc/network/interfaces mit
+
+  auto wlp1s0
+  iface wlp1s0 inet static
+          hostapd /etc/hostapd/hostapd.conf
+
 Um den hostapd-Daemon im System zu aktivieren, muss
 
   systemctl unmask hostapd
   systemctl start hostapd.service
 
-aufgerufen werden. Die Einrichtung von hostapd via /etc/default/hostap ist veraltet und wird in einer
-künftigen Debian-Version entfernt.
+aufgerufen werden.
 
 Das WLAN-Interface wlp1s0 sollte jetzt an ffmuc-client angekoppelt sein, was man mit
 
