@@ -49,7 +49,7 @@ Die folgenden Zeilen in /etc/network/interfaces erledigt das. Die Datei muss als
       broadcast 192.168.1.255
       netmask 255.255.255.0
       gateway 192.168.1.1
-      bridge_stp off # deaktiviere das sapnning tree protocol
+      bridge_stp off # deaktiviere das spanning tree protocol
       bridge_waitport 0 # keine Verzoegerung bevor ein Port verfuegbar wird
       bridge_fd 0 # kein Forwarding Delay
 
@@ -57,7 +57,7 @@ Die folgenden Zeilen in /etc/network/interfaces erledigt das. Die Datei muss als
   auto ffmuc-clients
   iface ffmuc-clients inet manual
       bridge_ports none
-      bridge_stp off # deaktiviere das sapnning tree protocol
+      bridge_stp off # deaktiviere das spanning tree protocol
       bridge_waitport 0 # keine Verzoegerung bevor ein Port verfuegbar wird
       bridge_fd 0 # kein Forwarding Delay
 
@@ -65,7 +65,7 @@ Die folgenden Zeilen in /etc/network/interfaces erledigt das. Die Datei muss als
   auto ffmuc-mesh
   iface ffmuc-mesh inet manual
       bridge_ports none
-      bridge_stp off # deaktiviere das sapnning tree protocol
+      bridge_stp off # deaktiviere das spanning tree protocol
       bridge_waitport 0 # keine Verzoegerung bevor ein Port verfuegbar wird
       bridge_fd 0 # kein Forwarding Delay
 
@@ -313,12 +313,12 @@ einloggen, und das Kommando
 
 starten. Eine Beispielausgabe ist
 
-  7: br-client: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP qlen 1000
-      link/ether 52:54:00:8b:1e:37 brd ff:ff:ff:ff:ff:ff
-      inet6 2001:609:a21:1a9:6054:ff:fe8b:2e37/64 scope global dynamic
-         valid_lft 7163sec preferred_lft 863sec
-      inet6 fe80::5055:ff:fe8c:2e37/64 scope link
-         valid_lft forever preferred_lft forever
+    7: br-client: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP qlen 1000
+        link/ether 52:54:00:8b:1e:37 brd ff:ff:ff:ff:ff:ff
+        inet6 2001:609:a21:1a9:6054:ff:fe8b:2e37/64 scope global dynamic
+           valid_lft 7163sec preferred_lft 863sec
+        inet6 fe80::5055:ff:fe8c:2e37/64 scope link
+           valid_lft forever preferred_lft forever
 
 Die IP-Adresse steht hinter dem ersten inet6 und lautet in diesem Fall
 
