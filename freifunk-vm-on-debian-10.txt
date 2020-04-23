@@ -301,8 +301,10 @@ prüfen kann. Die Ausgabe ist z.B.
 
 = Zugang per SSH zum Router =
 
-Falls bei der Konfiguration per Web-Interface ein öffentlicher Schlüssel hinterlegt wurde, kann man sich
-auf dem Router einloggen. Dazu muss man die IP-Adresse des Interfaces br-client auf dem Router herausfinden.
+Falls bei der Konfiguration per Web-Interface in den erweiterten Einstellungen der SSH-Zugang aktiviert
+wurde und ein öffentlicher Schlüssel hinterlegt wurde, kann man sich auf dem Router einloggen.
+Dazu muss man die IP-Adresse des Interfaces br-client auf dem Router herausfinden.
+
 Dazu vom Debian-Host per
 
   virsh -c qemu:///system console ffmuc-offloader
