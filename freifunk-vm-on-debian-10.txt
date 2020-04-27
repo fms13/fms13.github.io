@@ -15,7 +15,7 @@ Die folgenden Schritte werden beschrieben:
   - Konfiguration des Systems
   - Installation des ffmuc x86 64-Bit Images (gluon)
   - Installation und Konfiguration von gluon
-  - Anpassen der Netzwerkschnittstellen
+  - Anpassen der Netzwerkschnittstelle
   - Nutzen des internen WLAN-Adapters als Access Point
 
 == Installation der benötigten Pakete ==
@@ -112,7 +112,7 @@ für KVM das Default-Netzwerk ein:
 
 Jetzt installieren wir das Image, um es mit Qemu zu starten. Dazu als Benutzer aufrufen:
 
-    virt-install --connect qemu:///system --name ffmuc-offloader --memory 96 --vcpus=1 \
+    virt-install --connect qemu:///system --name ffmuc-offloader --memory 128 --vcpus=1 \
       --virt-type kvm --os-type linux --os-variant generic \
       --import --disk /home/vm-images/gluon-ffmuc-v2019.1.3-x86-64.img,format=raw,bus=sata \
       --network=bridge:ffmuc-clients \
@@ -198,7 +198,7 @@ testen. Als erfolgreiche Ausgabe erscheint z.B.
 
 Um den internen WLAN-Adapter als Access Point für das Client-Netzwerk zu nutzen, installieren wir hostapd mit
 
-  aptitude install hostapd
+  apt-get install hostapd
 
 Dann wird /etc/hostapd/hostapd.conf editiert und sollte diesen Inhalt bekommen:
 
@@ -212,6 +212,8 @@ Dann wird /etc/hostapd/hostapd.conf editiert und sollte diesen Inhalt bekommen:
   ieee80211d=1
   country_code=DE
   wmm_enabled=1
+
+Die Einstellungen für den Kanal und den Hardware-Mode kann man auf die eigenen Bedürfnisse anpassen.
 
 Die SSID für den aktuellen Standort kann der Liste auf https://ffmuc.net/wiki/doku.php?id=knb:gui entnommen werden.
 
