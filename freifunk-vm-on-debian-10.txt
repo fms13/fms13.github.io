@@ -33,30 +33,21 @@ Damit ein Benutzer KVM konfigurieren kann, muss er der Gruppe libvirt angehören
 
   adduser <Benutzername> libvirt
 
-Jetzt werden drei Netzwerkbrücken eingerichtet:
+Jetzt werden zwei Netzwerkbrücken eingerichtet:
 
-  - ffmuc-setup
   - ffmuc-clients
   - ffmuc-mesh
 
 Die folgenden Zeilen in /etc/network/interfaces erledigt das. Die Datei muss als root editiert werden.
 
-  # Bridge fuer das Einrichten von gluon:
-  auto ffmuc-setup
-  iface ffmuc-setup inet static
+  # Bridge für das Anbinden der Clients, vorerst konfiguriert zum Einrichten von gluon:
+  auto ffmuc-clients
+  iface ffmuc-clients inet static
       bridge_ports none
       address 192.168.1.2
       broadcast 192.168.1.255
       netmask 255.255.255.0
       gateway 192.168.1.1
-      bridge_stp off # deaktiviere das spanning tree protocol
-      bridge_waitport 0 # keine Verzoegerung bevor ein Port verfuegbar wird
-      bridge_fd 0 # kein Forwarding Delay
-
-  # Bridge für das Anbinden der Clients:
-  auto ffmuc-clients
-  iface ffmuc-clients inet manual
-      bridge_ports none
       bridge_stp off # deaktiviere das spanning tree protocol
       bridge_waitport 0 # keine Verzoegerung bevor ein Port verfuegbar wird
       bridge_fd 0 # kein Forwarding Delay
@@ -69,16 +60,18 @@ Die folgenden Zeilen in /etc/network/interfaces erledigt das. Die Datei muss als
       bridge_waitport 0 # keine Verzoegerung bevor ein Port verfuegbar wird
       bridge_fd 0 # kein Forwarding Delay
 
-Die Bridge ffmuc-setup bekommt die IP-Adresse 192.168.1.2 um gluon zu konfigurieren. Es muss sichergestellt
-sein, dass kein anderes Interface auf dem System diese IP-Adresse bereits nutzt, z.B. mit dem Befehl
+Die Bridge ffmuc-clients bekommt damit vorerst die IP-Adresse 192.168.1.2, um gluon zu konfigurieren. Es muss sichergestellt
+sein, dass kein anderes Interface auf dem System diese IP-Adresse bereits nutzt, dies kann man z.B. mit dem Befehl
 
   ip addr
+
+herausfinden.
 
 Die Netzwerkkonfiguration muss als root per
 
   systemctl restart networking.service
 
-oder mit einem Neustart des Systems neu geladen werden.
+und ggf. mit einem Neustart des Systems neu geladen werden.
 
 Die eingerichteten Bridges können angezeigt werden mit
 
@@ -89,7 +82,6 @@ was folgende Ausgabe ergibt:
   bridge name     bridge id               STP enabled     interfaces
   ffmuc-clients           8000.3cf8627f3488       no
   ffmuc-mesh              8000.fe5400b00e26       no
-  ffmuc-setup             8000.000000000000       no
 
 == Installation und Konfiguration von gluon ==
 
@@ -112,16 +104,22 @@ Dazu als Benutzer ausführen:
   chgrp -R libvirt /home/vm-images
   chmod -R g+w /home/vm-images
 
+Gluon soll via NAT über das lokale Netzwerk eine Verbindung in das Internet aufbauen können. Dazu richten wir
+für KVM das Default-Netzwerk ein:
+
+  virsh -c qemu:///system net-autostart default
+  virsh -c qemu:///system net-start default
+
 Jetzt installieren wir das Image, um es mit Qemu zu starten. Dazu als Benutzer aufrufen:
 
-  virt-install --connect qemu:///system --name ffmuc-offloader --memory 64 --vcpus=1 \
+    virt-install --connect qemu:///system --name ffmuc-offloader --memory 96 --vcpus=1 \
       --virt-type kvm --os-type linux --os-variant generic \
       --import --disk /home/vm-images/gluon-ffmuc-v2019.1.3-x86-64.img,format=raw,bus=sata \
-      --network=bridge:ffmuc-setup \
       --network=bridge:ffmuc-clients \
+      --network=default \
       --network=bridge:ffmuc-mesh \
       --noautoconsole
-
+      
 Damit die VM beim Systemstart gestartet wird, muss dieses Kommando aufgerufen werden:
 
   virsh -c qemu:///system autostart ffmuc-offloader
@@ -147,82 +145,35 @@ finale Konfiguration umkonfiguriert.
 
   virsh -c qemu:///system shutdown ffmuc-offloader
 
-Gluon soll via NAT über das lokale Netzwerk eine Verbindung in das Internet aufbauen können. Dazu richten wir
-für KVM das Default-Netzwerk ein:
+Jetzt wird die Bridge ffmuc-clients für den Betrieb von gluon umkonfiguriert, dazu /etc/network/interfaces als root editieren. Aus
 
-  virsh -c qemu:///system net-autostart default
-  virsh -c qemu:///system net-start default
-
-Jetzt werden die Netzwerkschnittstellen für gluon umkonfiguriert. Aus der Setup-Konfiguration
-
-  - ffmuc-setup
-  - ffmuc-clients
-  - ffmuc-mesh
+  # Bridge für das Anbinden der Clients, vorerst konfiguriert zum Einrichten von gluon:
+  auto ffmuc-clients
+  iface ffmuc-clients inet static
+      bridge_ports none
+      address 192.168.1.2
+      broadcast 192.168.1.255
+      netmask 255.255.255.0
+      gateway 192.168.1.1
+      bridge_stp off # deaktiviere das spanning tree protocol
+      bridge_waitport 0 # keine Verzoegerung bevor ein Port verfuegbar wird
+      bridge_fd 0 # kein Forwarding Delay
 
 wird
 
-  - ffmuc-clients
-  - default
-  - ffmuc-mesh
+  # Bridge für das Anbinden der Clients, Konfiguration zum Betrieb von gluon:
+  auto ffmuc-clients
+  iface ffmuc-clients inet manual
+      bridge_ports none
+      bridge_stp off # deaktiviere das spanning tree protocol
+      bridge_waitport 0 # keine Verzoegerung bevor ein Port verfuegbar wird
+      bridge_fd 0 # kein Forwarding Delay
 
-Als root editiert man dazu /etc/libvirt/qemu/ffmuc-offloader.xml und sucht die drei <interfaces>-Einträge.
+Danach die Netzwerkkonfiguration neu starten mit
 
-Dann ersetzt man die alte Konfiguration
+  systemctl restart networking.service
 
-    <interface type='bridge'>
-      <mac address='52:54:00:da:6f:0b'/>
-      <source bridge='ffmuc-setup'/>
-      <model type='e1000'/>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/>
-    </interface>
-    <interface type='bridge'>
-      <mac address='52:54:00:3c:f0:d5'/>
-      <source bridge='ffmuc-clients'/>
-      <model type='e1000'/>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x04' function='0x0'/>
-    </interface>
-    <interface type='bridge'>
-      <mac address='52:54:00:b0:0e:26'/>
-      <source bridge='ffmuc-mesh'/>
-      <model type='e1000'/>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x05' function='0x0'/>
-    </interface>
-
-durch die neue Konfiguration
-
-    <interface type='bridge'>
-      <mac address='52:54:00:3c:f0:d5'/>
-      <source bridge='ffmuc-clients'/>
-      <model type='e1000'/>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/>
-    </interface>
-    <interface type='network'>
-      <mac address='52:54:00:da:6f:0b'/>
-      <source network='default'/>
-      <model type='e1000'/>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x04' function='0x0'/>
-    </interface>
-    <interface type='bridge'>
-      <mac address='52:54:00:b0:0e:26'/>
-      <source bridge='ffmuc-mesh'/>
-      <model type='e1000'/>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x05' function='0x0'/>
-    </interface>
-
-Die <mac>...</mac>-Einträge sehen bei jeder Installation anders aus. Wichtig ist das Anpassen
-der
-
-  slot='0x03'
-
-bzw.
-
-  slot='0x04'
-
-Einträge für ffmuc-clients und das default-Netzwerk.
-
-Nach dem Speichern muss die Konfiguration neu eingelesen werden mit
-
-  systemctl reload libvirtd.service
+Eventuell ist ein Neustart des Systems notwendig, um die Netzwerkkonfiguration zu ändern.
 
 Nach dem Starten der gluon-VM mit
 
@@ -295,7 +246,6 @@ prüfen kann. Die Ausgabe ist z.B.
     ffmuc-clients           8000.3cf8627f3488       no              vnet0
                                                             wlp1s0
     ffmuc-mesh              8000.fe5400b00e26       no              vnet2
-    ffmuc-setup             8000.000000000000       no
     virbr0          8000.525400a88af3       yes             virbr0-nic
                                                             vnet1
 
