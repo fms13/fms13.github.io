@@ -272,10 +272,61 @@ S. https://ffmuc.net/wiki/doku.php?id=knb:rpb4_wg#lan_clients
 
 = Eingehende IPv6-Verbindungen für den Host funktionieren nicht mehr =
 
+Nachdem die ffmuc-VM startet, generiert libvirt auf dem Host eine zweite ipv6-Default-Route, da der ffmuc-offloader Internet-Zugang anbietet.
 
+S. https://bugzilla.redhat.com/show_bug.cgi?id=501934
 
-https://bugzilla.redhat.com/show_bug.cgi?id=501934
+Beispiel: 
 
+ffmuc-offloader-VM läuft nicht. Ausgabe von
+
+	route -6
+
+:
+
+	Kernel IPv6 routing table
+	Destination                    Next Hop                   Flag Met Ref Use If
+	localhost/128                  [::]                       U    256 2     0 lo
+    ...
+	2001:xxxx:xxxx:xxxx::/64       [::]                       UAe  256 2     0 enp3s0
+	fd62:xxxx:xxxx:xxxx::/64       [::]                       UAe  256 1     0 ffmuc-clients
+	...
+	[::]/0                         fe80::xxxx:xxxx:xxxx:xxxx  UGDAe 1024 5  0 enp3s0
+	...
+	
+ffmuc-offloader-VM läuft nicht. Ausgabe von
+
+	route -6
+
+:
+
+	Kernel IPv6 routing table
+	Destination                    Next Hop                   Flag Met Ref Use If
+	localhost/128                  [::]                       U    256 2     0 lo
+	2001:xxxx:xxxx:xxxx::/64       [::]                       UAe  256 1     0 ffmuc-clients
+	2001:xxxx:xxxx:xxxx::/64       [::]                       UAe  256 3     0 enp3s0
+	fd62:xxxx:xxxx:xxxx::/64       [::]                       UAe  256 1     0 ffmuc-clients
+	fd6b:xxxx:xxxx:xxxx::/64       [::]                       UA   256 7     0 enp3s0
+	[::]/0                         fe80::xxxx:xxxx:xxxx:xxxx  UGDAe 1024 5   0 enp3s0
+	[::]/0                         fe80::xxxx:xxxx:xxxx:xxxx  UGDAe 1024 5   0 ffmuc-clients
+	
+Eingehende ipv6-Verbindungen für den Host können nicht mehr funktionieren. Ich weiß nicht warum, aber wenn ein SYN-Paket über enp3s0 eintrifft, versucht Linux das ACK-Paket über ffmuc-clients zurück zu routen. Daher funktionieren eingehende ipv6-Verbindungen nicht mehr.
+	
+Lösung: In /etc/sysctl.conf eintragen:
+
+	net.ipv6.conf.ffmuc-clients.accept_ra=0
+
+Neustarten oder Wert aktivieren mit
+
+	sysctl -p
+
+Damit werden die Router Advertisements, bei denen auch die Default-Route von ffmuc-clients dabei ist, nicht mehr vom Host verarbeitet.
+
+Wir lassen die folgende einstellung weg:
+
+	#net.ipv6.conf.ffmuc-clients.autoconf=0
+
+Mit dieser Einstellung funktioniert sonst ipv6 für die ffmuc-Clients nicht mehr.
 
 = Zugang per SSH zum Router =
 
