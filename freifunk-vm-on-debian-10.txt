@@ -371,7 +371,7 @@ ffmuc-offloader-VM läuft nicht. Ausgabe von
 	[::]/0                         fe80::xxxx:xxxx:xxxx:xxxx  UGDAe 1024 5  0 enp3s0
 	...
 	
-ffmuc-offloader-VM läuft . Ausgabe von
+ffmuc-offloader-VM läuft. Ausgabe von
 
 	route -6
 
