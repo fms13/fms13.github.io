@@ -250,6 +250,32 @@ prüfen kann. Die Ausgabe ist z.B.
     ffmuc-mesh              8000.fe5400b00e26       no              vnet2
     virbr0          8000.525400a88af3       yes             virbr0-nic
                                                             vnet1
+== LAN-Clients, Nutzen dedizierter WLAN Access Points ==
+
+Ein WLAN Access Points ist ein LAN-Client: Will man LAN-Clients an die ffmuc-clients-Bridge anschließen, erstellt man ein
+VLAN auf einem LAN-Interface in /etc/network/interfaces:
+
+	# enp3s0 vlan with ID 17 for ffmuc clients:
+	auto enp3s0.17
+	iface enp3s0.17 inet manual
+
+Dieses VLAN muss an die ffmuc-client-Bridge angeschlossen werden:
+
+	auto ffmuc-clients
+	iface ffmuc-clients inet manual
+	    bridge_ports enp3s0.17
+	    bridge_stp off # deaktiviere das spanning tree protocol
+	    bridge_waitport 0 # keine Verzoegerung bevor ein Port verfuegbar wird
+	    bridge_fd 0 # kein Forwarding Delay
+
+S. https://ffmuc.net/wiki/doku.php?id=knb:rpb4_wg#lan_clients
+
+= Eingehende IPv6-Verbindungen für den Host funktionieren nicht mehr =
+
+
+
+https://bugzilla.redhat.com/show_bug.cgi?id=501934
+
 
 = Zugang per SSH zum Router =
 
